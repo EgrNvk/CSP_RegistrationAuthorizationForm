@@ -56,8 +56,22 @@ class ClientView:
         self.btn_back_register = tk.Button(self.register_frame, text="Back")
         self.btn_back_register.grid(row=4, column=0, columnspan=2, pady=5)
 
+        self.upload_frame = tk.Frame(self.root)
+
+        tk.Label(self.upload_frame, text="File path").grid(row=0, column=0)
+        self.upload_path_entry = tk.Entry(self.upload_frame)
+        self.upload_path_entry.grid(row=0, column=1)
+
+        self.btn_upload = tk.Button(self.upload_frame, text="Upload")
+        self.btn_upload.grid(row=1, column=0, columnspan=2, pady=5)
+
+        self.btn_back_upload = tk.Button(self.upload_frame, text="Back")
+        self.btn_back_upload.grid(row=2, column=0, columnspan=2, pady=5)
+
         self.label_response = tk.Label(self.root, text="", fg="blue")
         self.label_response.pack(pady=5)
+
+
 
 
     def get_login(self):
@@ -74,6 +88,9 @@ class ClientView:
 
     def get_reg_name(self):
         return self.reg_name.get()
+
+    def get_upload_path(self):
+        return self.upload_path_entry.get()
 
 
     def set_response(self, text):
@@ -92,7 +109,14 @@ class ClientView:
     def show_start(self):
         self.login_frame.pack_forget()
         self.register_frame.pack_forget()
+        self.upload_frame.pack_forget()
         self.start_frame.pack(padx=10, pady=10)
+
+    def show_upload(self):
+        self.start_frame.pack_forget()
+        self.login_frame.pack_forget()
+        self.register_frame.pack_forget()
+        self.upload_frame.pack(padx=10, pady=10)
 
     def start(self):
         self.root.mainloop()

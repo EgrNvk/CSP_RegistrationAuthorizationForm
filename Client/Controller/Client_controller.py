@@ -13,6 +13,10 @@ class ClientController:
         self.view.btn_back_login.config(command=self.back)
         self.view.btn_back_register.config(command=self.back)
 
+
+        self.view.btn_back_upload.config(command=self.back)
+        self.view.btn_upload.config(command=self.upload)
+
     def login(self):
 
         login = self.view.get_login()
@@ -20,7 +24,12 @@ class ClientController:
 
         response = self.model.send_form("login", login, password)
 
-        self.view.set_response(response)
+        if response == "OK LOGIN":
+            self.current_login = login
+            self.view.set_response("")
+            self.view.show_upload()
+        else:
+            self.view.set_response(response)
 
     def register(self):
 
@@ -34,3 +43,14 @@ class ClientController:
 
     def back(self):
         self.view.show_start()
+
+    def upload(self):
+
+        if not self.current_login:
+            self.view.set_response("ERROR NOT LOGGED IN")
+            return
+
+        path = self.view.get_upload_path()
+
+        response = self.model.send_file(self.current_login, path)
+        self.view.set_response(response)

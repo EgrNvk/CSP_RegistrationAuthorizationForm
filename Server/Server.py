@@ -13,6 +13,8 @@ class Server:
         self.users_file = "users.json"
         self.lock = threading.Lock()
 
+        self.images_dir = "images"
+
     def hash_password(self, password):
         return hashlib.sha256(password.encode()).hexdigest()
 
@@ -32,43 +34,79 @@ class Server:
         print("Connected:", addr)
 
         try:
-            data = conn.recv(1024).decode()
-            form = json.loads(data)
+            first = conn.recv(1)
 
-            action = form["action"]
-            login = form["login"]
-            password = form["password"]
-            name = form.get("name", "")
+            if not first:
+                conn.close()
+                return
 
-            with self.lock:
+            if first == b"{":
+                data = first + conn.recv(1023)
+                form = json.loads(data.decode("utf-8"))
 
-                users = self.load_users()
+                action = form["action"]
+                login = form["login"]
+                password = form["password"]
+                name = form.get("name", "")
 
-                if action == "register":
+                with self.lock:
+                    users = self.load_users()
 
-                    if login in users:
-                        conn.send("ERROR USER EXISTS".encode())
+                    if action == "register":
 
-                    else:
-                        users[login] = {
-                            "password": self.hash_password(password),
-                            "name": name
-                        }
+                        if login in users:
+                            conn.send("ERROR USER EXISTS".encode())
 
-                        self.save_users(users)
+                        else:
+                            users[login] = {
+                                "password": self.hash_password(password),
+                                "name": name,
+                                "image": ""
+                            }
 
-                        conn.send("OK REGISTER".encode())
+                            self.save_users(users)
+                            conn.send("OK REGISTER".encode())
 
-                elif action == "login":
+                    elif action == "login":
 
-                    if login not in users:
-                        conn.send("ERROR USER NOT FOUND".encode())
+                        if login not in users:
+                            conn.send("ERROR USER NOT FOUND".encode())
 
-                    elif users[login]["password"] != self.hash_password(password):
-                        conn.send("ERROR WRONG PASSWORD".encode())
+                        elif users[login]["password"] != self.hash_password(password):
+                            conn.send("ERROR WRONG PASSWORD".encode())
 
-                    else:
-                        conn.send("OK LOGIN".encode())
+                        else:
+                            conn.send("OK LOGIN".encode())
+
+            else:
+                command = first.decode("utf-8") + self.recv_line(conn)
+
+                if command == "UPLOAD":
+                    login = self.recv_line(conn)
+                    name = self.recv_line(conn)
+                    ext = self.recv_line(conn)
+
+                    os.makedirs(self.images_dir, exist_ok=True)
+
+                    filename = f"{login}_{name}{ext}"
+                    filepath = os.path.join(self.images_dir, filename)
+
+                    with open(filepath, "wb") as f:
+                        while True:
+                            data = conn.recv(1024)
+                            if not data:
+                                break
+                            f.write(data)
+
+                    with self.lock:
+                        users = self.load_users()
+
+                        if login in users:
+                            users[login]["image"] = filename
+                            self.save_users(users)
+                            conn.send("OK FILE UPLOADED".encode())
+                        else:
+                            conn.send("ERROR USER NOT FOUND".encode())
 
         except Exception as e:
             print("Error:", e)
@@ -95,5 +133,16 @@ class Server:
             )
 
             thread.start()
+
+    def recv_line(self, conn):
+        data = b""
+        while True:
+            b = conn.recv(1)
+            if not b:
+                break
+            if b == b"\n":
+                break
+            data += b
+        return data.decode("utf-8", errors="replace")
 
 Server().start()
