@@ -10,6 +10,8 @@ class ClientController:
 
         self.view.btn_login.config(command=self.login)
         self.view.btn_register.config(command=self.register)
+        self.view.btn_back_login.config(command=self.back)
+        self.view.btn_back_register.config(command=self.back)
 
     def login(self):
 
@@ -29,3 +31,6 @@ class ClientController:
         response = self.model.send_form("register", login, password, name)
 
         self.view.set_response(response)
+
+    def back(self):
+        self.view.show_start()

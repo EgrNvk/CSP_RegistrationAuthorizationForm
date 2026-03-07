@@ -20,9 +20,6 @@ class ClientView:
         self.btn_choose_register = tk.Button(self.start_frame, text="Register")
         self.btn_choose_register.pack(pady=5)
 
-        self.btn_choose_back = tk.Button(self.start_frame, text="Back")
-        self.btn_choose_back.pack(pady=5)
-
         self.login_frame = tk.Frame(self.root)
 
         tk.Label(self.login_frame, text="Login").grid(row=0, column=0)
@@ -35,6 +32,9 @@ class ClientView:
 
         self.btn_login = tk.Button(self.login_frame, text="Login")
         self.btn_login.grid(row=2, column=0, columnspan=2, pady=5)
+
+        self.btn_back_login = tk.Button(self.login_frame, text="Back")
+        self.btn_back_login.grid(row=3, column=0, columnspan=2, pady=5)
 
         self.register_frame = tk.Frame(self.root)
 
@@ -52,6 +52,9 @@ class ClientView:
 
         self.btn_register = tk.Button(self.register_frame, text="Register")
         self.btn_register.grid(row=3, column=0, columnspan=2, pady=5)
+
+        self.btn_back_register = tk.Button(self.register_frame, text="Back")
+        self.btn_back_register.grid(row=4, column=0, columnspan=2, pady=5)
 
         self.label_response = tk.Label(self.root, text="", fg="blue")
         self.label_response.pack(pady=5)
@@ -85,6 +88,11 @@ class ClientView:
         self.start_frame.pack_forget()
         self.login_frame.pack_forget()
         self.register_frame.pack(padx=10, pady=10)
+
+    def show_start(self):
+        self.login_frame.pack_forget()
+        self.register_frame.pack_forget()
+        self.start_frame.pack(padx=10, pady=10)
 
     def start(self):
         self.root.mainloop()
